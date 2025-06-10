@@ -1,45 +1,23 @@
--- Create database if not exists
-CREATE DATABASE IF NOT EXISTS fieldelevate;
-
--- Use the database
-\c fieldelevate;
-
--- Enable extensions
+-- Remove TimescaleDB-specific features for Railway
+-- CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-CREATE EXTENSION IF NOT EXISTS "timescaledb";
 
 -- Strategies table
-CREATE TABLE strategies (
+CREATE TABLE IF NOT EXISTS strategies (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
-    type VARCHAR(50) NOT NULL CHECK (type IN ('momentum', 'mean_reversion', 'arbitrage', 'ml_based', 'hybrid')),
-    status VARCHAR(50) NOT NULL CHECK (status IN ('active', 'paused', 'testing', 'retired')),
-    parameters JSONB NOT NULL,
+    type VARCHAR(100) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'active',
+    config JSONB NOT NULL DEFAULT '{}',
+    performance_metrics JSONB DEFAULT '{}',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Strategy performance table
-CREATE TABLE strategy_performance (
-    strategy_id UUID NOT NULL REFERENCES strategies(id),
-    date DATE NOT NULL,
-    total_return DECIMAL(10, 4),
-    sharpe_ratio DECIMAL(8, 4),
-    sortino_ratio DECIMAL(8, 4),
-    max_drawdown DECIMAL(8, 4),
-    win_rate DECIMAL(5, 4),
-    total_trades INTEGER,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (strategy_id, date)
-);
-
--- Convert to TimescaleDB hypertable
-SELECT create_hypertable('strategy_performance', 'date');
-
 -- Trades table
-CREATE TABLE trades (
+CREATE TABLE IF NOT EXISTS trades (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    strategy_id UUID NOT NULL REFERENCES strategies(id),
+    strategy_id UUID REFERENCES strategies(id),
     symbol VARCHAR(20) NOT NULL,
     side VARCHAR(10) NOT NULL CHECK (side IN ('buy', 'sell')),
     entry_price DECIMAL(20, 8) NOT NULL,
@@ -57,8 +35,8 @@ CREATE TABLE trades (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Market data table
-CREATE TABLE market_data (
+-- Market data table (regular table instead of hypertable)
+CREATE TABLE IF NOT EXISTS market_data (
     time TIMESTAMPTZ NOT NULL,
     symbol VARCHAR(20) NOT NULL,
     price DECIMAL(20, 8) NOT NULL,
@@ -71,11 +49,12 @@ CREATE TABLE market_data (
     PRIMARY KEY (time, symbol)
 );
 
--- Convert to hypertable
-SELECT create_hypertable('market_data', 'time');
+-- Create indexes for performance
+CREATE INDEX idx_market_data_time ON market_data(time DESC);
+CREATE INDEX idx_market_data_symbol ON market_data(symbol);
 
 -- Indicators table
-CREATE TABLE indicators (
+CREATE TABLE IF NOT EXISTS indicators (
     time TIMESTAMPTZ NOT NULL,
     symbol VARCHAR(20) NOT NULL,
     indicator_name VARCHAR(50) NOT NULL,
@@ -86,11 +65,11 @@ CREATE TABLE indicators (
     PRIMARY KEY (time, symbol, indicator_name)
 );
 
--- Convert to hypertable
-SELECT create_hypertable('indicators', 'time');
+-- Create indexes
+CREATE INDEX idx_indicators_time ON indicators(time DESC);
 
 -- System events table
-CREATE TABLE system_events (
+CREATE TABLE IF NOT EXISTS system_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     event_type VARCHAR(100) NOT NULL,
     severity VARCHAR(20) NOT NULL CHECK (severity IN ('info', 'warning', 'error', 'critical')),
@@ -100,25 +79,10 @@ CREATE TABLE system_events (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
--- Indexes for performance
+-- Indexes
 CREATE INDEX idx_strategies_status ON strategies(status);
 CREATE INDEX idx_trades_strategy_id ON trades(strategy_id);
 CREATE INDEX idx_trades_status ON trades(status);
 CREATE INDEX idx_trades_entry_time ON trades(entry_time);
 CREATE INDEX idx_system_events_severity ON system_events(severity);
 CREATE INDEX idx_system_events_created_at ON system_events(created_at);
-
--- Create update trigger for updated_at
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = NOW();
-    RETURN NEW;
-END;
-$$ language 'plpgsql';
-
-CREATE TRIGGER update_strategies_updated_at BEFORE UPDATE ON strategies
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
-CREATE TRIGGER update_trades_updated_at BEFORE UPDATE ON trades
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
