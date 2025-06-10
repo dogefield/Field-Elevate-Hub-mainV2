@@ -164,3 +164,7 @@ Built with cutting-edge technologies:
 - TensorFlow.js for ML capabilities
 - React for user interfaces
 - Node.js for backend services
+
+## Frontend
+
+The repository now includes a Next.js frontend located in `frontend/`. Use `npm run dev` inside that directory to develop locally. Deployment to Railway is handled via the `railway.json` in the project root.
