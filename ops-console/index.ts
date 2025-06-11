@@ -1,5 +1,5 @@
 import express from 'express';
-import { setupMCPClient, createMCPHandler } from '../shared/mcp/mcp-client';
+import { setupMCPClient, createMCPHandler } from '../replit-app-template/mcp-client';
 import { SystemMonitor } from './utils/system-monitor';
 import { AlertManager } from './utils/alert-manager';
 import { AgentOrchestrator } from './utils/agent-orchestrator';
@@ -504,7 +504,8 @@ async function logConfigChange(appId: string, config: any, updatedBy: string) {
   await systemMonitor.logAuditEvent(log);
 }
 
-const PORT = process.env.PORT || 3007;
-server.listen(PORT, () => {
-  console.log(`Operations Console running on port ${PORT}`);
+const port = process.env.PORT || 3007;
+const host = '0.0.0.0';
+server.listen(port, host, () => {
+  console.log(`Service running on ${host}:${port}`);
 });
