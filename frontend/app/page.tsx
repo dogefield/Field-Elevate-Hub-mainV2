@@ -5,7 +5,7 @@ import { ComingSoon } from '@/components/ui/coming-soon';
 
 export default function Home() {
   const [features, setFeatures] = useState<Record<string, string>>({});
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
   useEffect(() => {
     const checkFeatures = async () => {

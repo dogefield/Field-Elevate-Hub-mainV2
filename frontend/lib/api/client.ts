@@ -1,7 +1,7 @@
 export class APIClient {
   baseURL: string;
 
-  constructor(baseURL: string = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080') {
+  constructor(baseURL: string = import.meta.env.VITE_API_URL || 'http://localhost:3001') {
     this.baseURL = baseURL;
   }
 
