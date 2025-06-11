@@ -2,14 +2,13 @@
   "name": "field-elevate-hub",
   "version": "2.0.0",
   "description": "Field Elevate AI-native hedge fund system",
-  "main": "dist/server.js",
+  "main": "server.js",
   "engines": {
     "node": ">=18.0.0"
   },
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts",
+    "start": "node server.js",
+    "dev": "node server.js",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "migrate": "node scripts/migrate.js"
