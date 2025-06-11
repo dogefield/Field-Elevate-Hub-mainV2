@@ -6,7 +6,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
+const host = '0.0.0.0';
 
 // Middleware
 app.use(cors());
@@ -105,6 +106,15 @@ const initDB = async () => {
     }
   } else {
     console.log('⚠️  No database URL provided - running without database');
+  }
+};
+
+const connectWithRetry = async () => {
+  try {
+    await initDB();
+  } catch (err) {
+    console.log('Database connection failed, retrying in 5 seconds...');
+    setTimeout(connectWithRetry, 5000);
   }
 };
 
@@ -279,9 +289,9 @@ app.get('/api/signals', async (req, res) => {
 
 // Start server if run directly
 if (require.main === module) {
-  app.listen(PORT, async () => {
-    console.log(`🚀 Field Elevate API running on port ${PORT}`);
-    await initDB();
+  app.listen(port, host, async () => {
+    console.log(`Service running on ${host}:${port}`);
+    connectWithRetry();
   });
 }
 

@@ -1,5 +1,5 @@
 import express from 'express';
-import { setupMCPClient, createMCPHandler } from './mcp-client';
+import { setupMCPClient, createMCPHandler } from '../replit-app-template/mcp-client';
 
 const app = express();
 app.use(express.json());
@@ -74,7 +74,8 @@ function getLastUpdateTime() {
   return new Date();
 }
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Data Hub running on port ${PORT}`);
+const port = process.env.PORT || 3001;
+const host = '0.0.0.0';
+app.listen(port, host, () => {
+  console.log(`Service running on ${host}:${port}`);
 });

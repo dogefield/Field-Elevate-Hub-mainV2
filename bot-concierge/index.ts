@@ -1,5 +1,5 @@
 import express from 'express';
-import { setupMCPClient, createMCPHandler } from '../shared/mcp/mcp-client';
+import { setupMCPClient, createMCPHandler } from '../replit-app-template/mcp-client';
 import { ConversationManager } from './utils/conversation-manager';
 import { QueryProcessor } from './utils/query-processor';
 import { ResponseGenerator } from './utils/response-generator';
@@ -682,7 +682,8 @@ async function fetchVisualizationData(requirements: any) {
   return await mcpClient.callApp('data-hub', 'get_historical_data', requirements);
 }
 
-const PORT = process.env.PORT || 3006;
-app.listen(PORT, () => {
-  console.log(`Bot Concierge running on port ${PORT}`);
+const port = process.env.PORT || 3006;
+const host = '0.0.0.0';
+app.listen(port, host, () => {
+  console.log(`Service running on ${host}:${port}`);
 });
