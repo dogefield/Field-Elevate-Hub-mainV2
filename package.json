@@ -22,7 +22,11 @@
     "fastify": "^4.25.2",
     "pino": "^8.17.2",
     "uuid": "^9.0.1",
-    "openai": "^4.28.0"
+    "openai": "^4.28.0",
+    "cors": "^2.8.5",
+    "sequelize": "^6.37.0",
+    "bcrypt": "^5.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
