@@ -4,15 +4,14 @@
   "description": "Field Elevate AI-native hedge fund system",
   "main": "dist/server.js",
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=9.0.0"
+    "node": ">=18.0.0"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "install:all": "npm install && cd frontend && npm install && cd ..",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "migrate": "node scripts/migrate.js"
   },
   "dependencies": {
